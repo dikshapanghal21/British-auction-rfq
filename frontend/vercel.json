@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api",
+      "destination": "https://british-auction-rfq-z96w.onrender.com/api"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "https://british-auction-rfq-z96w.onrender.com/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
