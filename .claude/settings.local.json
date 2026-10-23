@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(psql -c \"SELECT version\\(\\)\")",
+      "Bash(pg_isready)",
+      "Bash(psql -U macbook -d postgres -c \"SELECT 1\")",
+      "Bash(/Users/macbook/Desktop/british-auction-rfq/backend/.venv/bin/python -c \"import fastapi, psycopg, uvicorn, pydantic; print\\('all deps ok'\\)\")"
+    ]
+  }
+}

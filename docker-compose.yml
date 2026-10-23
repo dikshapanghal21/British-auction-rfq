@@ -1,0 +1,19 @@
+
+#don't want to install postgres!! 
+
+services:
+  db: # 
+    image: postgres:16 #using postgres v16, 
+    environment: #basically the login details postgres 
+      POSTGRES_USER: postgres #default username!
+      POSTGRES_PASSWORD: postgres # #pass
+      POSTGRES_DB: british_auction #creates this database automatically 
+    ports:
+      - "5433:5432" #your laptop's port 5432 talks to the container's port 5432 
+    volumes:
+      - pgdata:/var/lib/postgresql/data #saves data here!
+
+
+volumes:
+  pgdata: #docker remembers that pgdata volume we mentioned up there
+

@@ -1,0 +1,36 @@
+digraph Architecture {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.5, ranksep=0.9, pad=0.3, bgcolor="white"];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#ffffff", color="#9aa3b5"];
+  edge  [fontname="Helvetica", fontsize=10, color="#5a6377"];
+
+  subgraph cluster_client {
+    label="Browser — React SPA (Vite)"; style="rounded,filled"; fillcolor="#eef2ff"; color="#b8c4f5";
+    list   [label="Auction Listing\n/"];
+    create [label="Create RFQ\n/rfqs/new"];
+    detail [label="Auction Details + Bid Form\n/rfqs/:id"];
+    clock  [label="Server-synced clock\n(countdowns)", fillcolor="#f7f8fb"];
+  }
+
+  subgraph cluster_server {
+    label="Python — FastAPI on Uvicorn"; style="rounded,filled"; fillcolor="#ecf8f2"; color="#a9dcc4";
+    routes   [label="REST router\n/api/rfqs\n(OpenAPI docs at /docs)"];
+    validate [label="Pydantic models\n(field + cross-field rules)"];
+    engine   [label="Auction Engine\n• ranking (L1, L2…)\n• trigger check (X window)\n• extend by Y, cap at forced close", fillcolor="#d9f2e6"];
+    sweeper  [label="Status Sweeper (asyncio, 1s)\nACTIVE → CLOSED / FORCE_CLOSED\n+ close event in log"];
+  }
+
+  subgraph cluster_db {
+    label="PostgreSQL (psycopg 3 pool)"; style="rounded,filled"; fillcolor="#fff6e5"; color="#f0d39a";
+    db [label="rfqs | suppliers | bids | activity_logs", shape=cylinder, fillcolor="#fffaf0"];
+  }
+
+  list   -> routes [label="GET /rfqs\npoll 3s"];
+  create -> routes [label="POST /rfqs"];
+  detail -> routes [label="GET /rfqs/:id (poll 2s)\nPOST /rfqs/:id/bids"];
+  routes -> validate;
+  validate -> engine;
+  engine -> db [label="1 transaction per bid\nSELECT … FOR UPDATE on RFQ row"];
+  sweeper -> db [label="guarded UPDATE\n(no double close event)"];
+  routes -> clock [label="serverTime", style=dashed, dir=back];
+}

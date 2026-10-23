@@ -1,0 +1,69 @@
+digraph ER {
+  rankdir=LR;
+  graph [fontname="Helvetica", pad=0.3, nodesep=0.6, ranksep=1.0, bgcolor="white"];
+  node  [fontname="Helvetica", fontsize=10, shape=plain];
+  edge  [fontname="Helvetica", fontsize=10, color="#5a6377", arrowhead=crow, arrowtail=tee, dir=both];
+
+  rfqs [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" color="#9aa3b5">
+      <tr><td bgcolor="#2f5bea" colspan="2"><font color="white"><b>rfqs</b></font></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left" port="id">BIGINT PK</td></tr>
+      <tr><td align="left">reference_id</td><td align="left">VARCHAR(40) UNIQUE</td></tr>
+      <tr><td align="left">name</td><td align="left">VARCHAR(200)</td></tr>
+      <tr><td align="left">pickup_date</td><td align="left">DATE</td></tr>
+      <tr><td align="left">bid_start_at</td><td align="left">TIMESTAMPTZ</td></tr>
+      <tr><td align="left">bid_close_at</td><td align="left">TIMESTAMPTZ (original)</td></tr>
+      <tr><td align="left">current_close_at</td><td align="left">TIMESTAMPTZ (live)</td></tr>
+      <tr><td align="left">forced_close_at</td><td align="left">TIMESTAMPTZ</td></tr>
+      <tr><td align="left">trigger_window_min</td><td align="left">INT (X)</td></tr>
+      <tr><td align="left">extension_min</td><td align="left">INT (Y)</td></tr>
+      <tr><td align="left">trigger_type</td><td align="left">ENUM</td></tr>
+      <tr><td align="left">status</td><td align="left">ENUM</td></tr>
+      <tr><td align="left">extension_count</td><td align="left">INT</td></tr>
+      <tr><td align="left">created_at</td><td align="left">TIMESTAMPTZ</td></tr>
+    </table>>];
+
+  suppliers [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" color="#9aa3b5">
+      <tr><td bgcolor="#2f5bea" colspan="2"><font color="white"><b>suppliers</b></font></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left" port="id">BIGINT PK</td></tr>
+      <tr><td align="left">name</td><td align="left">VARCHAR(100) UNIQUE(lower)</td></tr>
+      <tr><td align="left">created_at</td><td align="left">TIMESTAMPTZ</td></tr>
+    </table>>];
+
+  bids [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" color="#9aa3b5">
+      <tr><td bgcolor="#12805c" colspan="2"><font color="white"><b>bids</b></font></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left" port="id">BIGINT PK</td></tr>
+      <tr><td align="left" port="rfq">rfq_id</td><td align="left">FK → rfqs</td></tr>
+      <tr><td align="left" port="sup">supplier_id</td><td align="left">FK → suppliers</td></tr>
+      <tr><td align="left">freight_charges</td><td align="left">NUMERIC(12,2)</td></tr>
+      <tr><td align="left">origin_charges</td><td align="left">NUMERIC(12,2)</td></tr>
+      <tr><td align="left">destination_charges</td><td align="left">NUMERIC(12,2)</td></tr>
+      <tr><td align="left">total_amount</td><td align="left">NUMERIC(14,2) GENERATED</td></tr>
+      <tr><td align="left">transit_time_days</td><td align="left">INT</td></tr>
+      <tr><td align="left">quote_valid_until</td><td align="left">DATE</td></tr>
+      <tr><td align="left">created_at</td><td align="left">TIMESTAMPTZ</td></tr>
+    </table>>];
+
+  activity_logs [label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" color="#9aa3b5">
+      <tr><td bgcolor="#b26a00" colspan="2"><font color="white"><b>activity_logs</b></font></td></tr>
+      <tr><td align="left"><b>id</b></td><td align="left">BIGINT PK</td></tr>
+      <tr><td align="left" port="rfq">rfq_id</td><td align="left">FK → rfqs</td></tr>
+      <tr><td align="left">event_type</td><td align="left">ENUM</td></tr>
+      <tr><td align="left" port="bid">bid_id</td><td align="left">FK → bids NULL</td></tr>
+      <tr><td align="left" port="sup">supplier_id</td><td align="left">FK → suppliers NULL</td></tr>
+      <tr><td align="left">old_close_at</td><td align="left">TIMESTAMPTZ NULL</td></tr>
+      <tr><td align="left">new_close_at</td><td align="left">TIMESTAMPTZ NULL</td></tr>
+      <tr><td align="left">reason</td><td align="left">TEXT NULL</td></tr>
+      <tr><td align="left">message</td><td align="left">TEXT</td></tr>
+      <tr><td align="left">created_at</td><td align="left">TIMESTAMPTZ</td></tr>
+    </table>>];
+
+  rfqs:id:e -> bids:rfq:w;
+  suppliers:id:e -> bids:sup:w;
+  rfqs:id:e -> activity_logs:rfq:w;
+  bids:id:e -> activity_logs:bid:w [style=dashed];
+  suppliers:id:e -> activity_logs:sup:w [style=dashed];
+}
